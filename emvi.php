@@ -57,7 +57,7 @@ class EmviClient {
 		$result = @file_get_contents($url, false, $context);
 		
 		if($result === FALSE) {
-			throw new Exception("Error refreshing token");
+			throw new Exception("Error refreshing token: ".$http_response_header[0]);
 		}
 
 		$resp = json_decode($result);
@@ -76,12 +76,14 @@ class EmviClient {
 		$result = @file_get_contents($url, false, $context);
 		
 		if($result === FALSE) {
-			if($this->isUnauthorized($http_response_header[0]) && $retry) {
+			$responseHeader = $http_response_header[0];
+
+			if($this->isUnauthorized($responseHeader) && $retry) {
 				$this->refreshToken();
 				return $this->getArticle($id, $langId, $version, false);
 			}
 			else {
-				throw new Exception("Error reading article");
+				throw new Exception("Error reading article: ".$responseHeader." URL: ".$url);
 			}
 		}
 
